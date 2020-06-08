@@ -1,0 +1,501 @@
+//Serial Library to connect with Arduino
+import processing.serial.*;
+//CP5 library for better aesthetic and easier UI
+import controlP5.*;
+Serial mySerial;
+
+//floatlists to store values sent by pressure sensors
+FloatList sensor1 = new FloatList();
+FloatList sensor2 = new FloatList();
+FloatList sensor3 = new FloatList();
+FloatList sensor4 = new FloatList();
+FloatList sensor5 = new FloatList();
+FloatList sensor6 = new FloatList();
+
+//floatlists for replay function that did not make it into the final product
+FloatList replay1 = new FloatList();
+FloatList replay2 = new FloatList();
+FloatList replay3 = new FloatList();
+FloatList replay4 = new FloatList();
+FloatList replay5 = new FloatList();
+FloatList replay6 = new FloatList();
+
+String myString = null;
+int nl = 10;
+float myVal;
+
+//x and y positions of force over time graphs
+float xPos1 = 960;
+float xPos2 = 960;
+float xPos3 = 960;
+float xPos4 = 960;
+float xPos5 = 960;
+float xPos6 = 960;
+
+float yPos1 = 188;
+float yPos2 = 336;
+float yPos3 = 484;
+float yPos4 = 632;
+float yPos5 = 780;
+float yPos6 = 928;
+
+//value to differentiate between left and right foot
+int foot = 0;
+//value to differentiate between sensors
+int group = 1;
+//end of force over time graphs
+int end = 1920;
+//value to indicate when to take values from arduino
+char character = '1';
+//used for pause/play when using the force over time graphs
+int cycle = 1;
+float offPos;
+ControlP5 cp5; //create ControlP5 object
+PFont font; //do not change
+
+void setup() {
+  //size of the window
+  size(1920, 1080);
+//CP5 library to create buttons
+  cp5 = new ControlP5(this); //do not change
+  font = createFont("Georgia Bold", 20); //font for buttons and title
+  cp5.addButton("ON") //name of button
+    .setPosition(100, 850) //x and y upper left corner of button
+    .setSize(80, 40) //(width, height)
+    .setFont(font) //font
+    .setColorBackground(color(255, 0, 0)) //background r,g,b
+    .setColorForeground(color(0, 255, 0)) //mouse over color r,g,b
+    .setColorLabel(color(0, 0, 0)) //text color r,g,b
+    ;
+
+  cp5.addButton("OFF")
+    .setPosition(260, 850)
+    .setSize(80, 40)
+    .setFont(font)
+    .setColorBackground(color(255, 0, 0))
+    .setColorForeground(color(0, 255, 0))
+    .setColorLabel(color(0, 0, 0))
+    ;
+    
+  cp5.addButton("RESET") //name of button
+    .setPosition(420, 850) //x and y upper left corner of button
+    .setSize(80, 40) //(width, height)
+    .setFont(font) //font
+    .setColorBackground(color(255, 0, 0)) //background r,g,b
+    .setColorForeground(color(0, 255, 0)) //mouse over color r,g,b
+    .setColorLabel(color(0, 0, 0)) //text color r,g,b
+    ;
+
+  cp5.addButton("SWITCH")
+    .setPosition(580, 850)
+    .setSize(80,40)
+    .setFont(font)
+    .setColorBackground(color(255,0,0))
+    .setColorBackground(color(0,255,0))
+    .setColorLabel(color(0,0,0))
+    ;
+//accesses usb port to access arduino
+  String myPort = Serial.list() [1];
+  mySerial = new Serial(this, myPort, 9600);
+}
+
+void draw() {
+  //ellipses drawn for color changing sensor diagram
+  if(foot==0){
+    noFill();
+    ellipse(500,120,80,120);
+    ellipse(430,150,50,80);
+    ellipse(378,175,48,75);
+    ellipse(330,210,46,70);
+    ellipse(285,250,44,65);
+    ellipse(490, 290, 150, 200);
+    ellipse(335, 375, 150, 200);
+    ellipse(400, 675, 190, 250);
+  }else{
+    noFill();
+    ellipse(460,120,80,120);
+    ellipse(530,150,50,80);
+    ellipse(582,175,48,75);
+    ellipse(630,210,46,70);
+    ellipse(675,250,44,65);
+    ellipse(470, 290, 150, 200);
+    ellipse(625, 375, 150, 200);
+    ellipse(560, 675, 190, 250);
+  }
+  //draws graph axes
+  axis();
+ 
+  //sends character to arduino telling it to send values or not
+  mySerial.write(character);
+  while (mySerial.available() > 0) {
+    myString = mySerial.readStringUntil(nl);
+
+    if (myString != null) {
+
+      myVal = float(myString);
+//if/else statements drawing rectangles to at as force over time graphs
+      if (group==1) {
+        sensor1.append((myVal/415)*510);
+        rect(xPos1, yPos1, 1, -(sensor1.get(sensor1.size()-1)/510)*140);
+        drawSensor1(0);
+        xPos1++;
+        group++;
+      } else if (group==2) {
+        sensor2.append((myVal/415)*510);
+        rect(xPos2, yPos2, 1, -((sensor2.get(sensor2.size()-1)/510)*140));
+        drawSensor2(0);
+        xPos2++;
+        group++;
+      }else if (group==3) {
+        sensor3.append((myVal/415)*510);
+        rect(xPos3, yPos3, 1, -((sensor3.get(sensor3.size()-1)/510)*140));
+        drawSensor3(0);
+        xPos3++;
+        group++;
+      }else if (group==4) {
+        sensor4.append((myVal/465)*510);
+        rect(xPos4, yPos4, 1, -((sensor4.get(sensor4.size()-1)/510)*140));
+       drawSensor4(0);
+        xPos4++;
+        group++;
+      }else if (group==5) {
+        sensor5.append((myVal/415)*510);
+        rect(xPos5, yPos5, 1, -((sensor5.get(sensor5.size()-1)/510)*140));
+        drawSensor5(0);
+        xPos5++;
+        group++;
+      }else if (group==6) {
+        sensor6.append(myVal);
+        rect(xPos6, yPos6, 1, -((sensor6.get(sensor6.size()-1)/510)*140));
+        drawSensor6(0);
+        xPos6++;
+        group=1;
+      }
+    }
+  }
+  
+}
+//functions for CP5 buttons
+//ON resets x positions and stores when the graphs were stopped (pause/play function)
+void ON() {
+  if(cycle == 1){
+    xPos1 = 960;
+    xPos2 = 960;
+    xPos3 = 960;
+    xPos4 = 960;
+    xPos5 = 960;
+    xPos6 = 960;
+  }else{
+    xPos1 = offPos + 50;
+    xPos2 = offPos + 50;
+    xPos3 = offPos + 50;
+    xPos4 = offPos + 50;
+    xPos5 = offPos + 50;
+    xPos6 = offPos + 50;
+  }
+  //changes character to tell arduino to send values
+  character = '2';
+}
+//OFF sets cycle != 1 so ON doesn't reset x value immediately
+//also stores when it was stopped so ON knows when to restart it
+//sets character too 1 to tell arduino to stop sending values
+void OFF() {
+  cycle++;
+  offPos = xPos1;
+  character = '1';
+}
+//RESET empties all floatlists, refreshes the background, redraws the axes, and resets cycle and group
+void RESET(){
+  while(sensor1.size() != 0){
+    sensor1.remove(0);
+    sensor2.remove(0);
+    sensor3.remove(0);
+    sensor4.remove(0);
+    sensor5.remove(0);
+    sensor6.remove(0);
+  }
+  background(200);
+  cycle = 1;
+  group =1;
+  axis();
+}
+//SWITCH changes value of foot to switch between left and right feet
+void SWITCH(){
+  background(200);
+  if(foot==0){
+    foot = 1;
+  }else{
+    foot = 0;
+  }
+}
+//all drawSensor functions fill the ellipses in the diagram with the corresponding RGB value from the sensors
+
+void drawSensor1(int x){
+  if(foot == 0){
+    ellipse(500, 120, 60, 60);
+    if(sensor1.get(x)<=255){
+      fill(sensor1.get(x), 255, 0);
+      replay1.append(sensor1.remove(x));
+    }else{
+      fill(255, 255-(sensor1.get(x)-255), 0);
+      replay1.append(sensor1.remove(x));
+    }
+  }else{
+    ellipse(460, 120, 60, 60);
+    if(sensor1.get(x)<=255){
+      fill(sensor1.get(x), 255, 0);
+      replay1.append(sensor1.remove(x));
+    }else{
+      fill(255, 255-(sensor1.get(x)-255), 0);
+      replay1.append(sensor1.remove(x));
+    }
+  }
+}
+
+void drawSensor2(int x){
+  if(foot == 0){
+    ellipse(490, 290, 60, 60);
+    if(sensor2.get(x)<=255){
+      fill(sensor2.get(x), 255, 0);
+      replay1.append(sensor2.remove(x));
+    }else{
+      fill(255, 255-(sensor2.get(x)-255), 0);
+      replay1.append(sensor2.remove(x));
+    }
+  }else{
+    ellipse(470, 290, 60, 60);
+    if(sensor2.get(x)<=255){
+      fill(sensor2.get(x), 255, 0);
+      replay1.append(sensor2.remove(x));
+    }else{
+      fill(255, 255-(sensor2.get(x)-255), 0);
+      replay1.append(sensor2.remove(x));
+    }
+  }
+}
+
+void drawSensor3(int x){
+  if(foot == 0){
+    ellipse(335, 375, 60, 60);
+    if(sensor3.get(x)<=255){
+      fill(sensor3.get(x), 255, 0);
+      replay1.append(sensor3.remove(x));
+    }else{
+      fill(255, 255-(sensor3.get(x)-255), 0);
+      replay1.append(sensor3.remove(x));
+    }
+  }else{
+    ellipse(625, 375, 60, 60);
+    if(sensor3.get(x)<=255){
+      fill(sensor3.get(x), 255, 0);
+      replay1.append(sensor3.remove(x));
+    }else{
+      fill(255, 255-(sensor3.get(x)-255), 0);
+      replay1.append(sensor3.remove(x));
+    }
+  }
+}
+
+void drawSensor4(int x){
+  if(foot == 0){
+    ellipse(470, 475, 60, 60);
+    if(sensor4.get(x)<=255){
+      fill(sensor4.get(x), 255, 0);
+      replay1.append(sensor4.remove(x));
+    }else{
+      fill(255, 255-(sensor4.get(x)-255), 0);
+      replay1.append(sensor4.remove(x));
+    }
+  }else{
+    ellipse(490, 475, 60, 60);
+    if(sensor4.get(x)<=255){
+      fill(sensor4.get(x), 255, 0);
+      replay1.append(sensor4.remove(x));
+    }else{
+      fill(255, 255-(sensor4.get(x)-255), 0);
+      replay1.append(sensor4.remove(x));
+    }
+  }
+}
+
+void drawSensor5(int x){
+  if(foot == 0){
+    ellipse(340, 515, 60, 60);
+    if(sensor5.get(x)<=255){
+      fill(sensor5.get(x), 255, 0);
+      replay1.append(sensor5.remove(x));
+    }else{
+      fill(255, 255-(sensor5.get(x)-255), 0);
+      replay1.append(sensor5.remove(x));
+    }
+  }else{
+    ellipse(620, 515, 60, 60);
+    if(sensor5.get(x)<=255){
+      fill(sensor5.get(x), 255, 0);
+      replay1.append(sensor5.remove(x));
+    }else{
+      fill(255, 255-(sensor5.get(x)-255), 0);
+      replay1.append(sensor5.remove(x));
+    }
+  }
+}
+
+void drawSensor6(int x){
+  if(foot == 0){
+    ellipse(400, 675, 60, 60);
+    if(sensor6.get(x)<=255){
+      fill(sensor6.get(x), 255, 0);
+      replay1.append(sensor6.remove(x));
+    }else{
+      fill(255, 255-(sensor6.get(x)-255), 0);
+      replay1.append(sensor6.remove(x));
+    }
+  }else{
+    ellipse(560, 675, 60, 60);
+    if(sensor6.get(x)<=255){
+      fill(sensor6.get(x), 255, 0);
+      replay1.append(sensor6.remove(x));
+    }else{
+      fill(255, 255-(sensor6.get(x)-255), 0);
+      replay1.append(sensor6.remove(x));
+    }
+  }
+}
+//draws all axes and labels (x axis in seconds, y axis in pounds)
+void axis(){
+  fill(0);
+  line(960,40,960,928);
+  
+  text("Sensor 1", 850, 60);
+  line(960,928,end,928);
+  text("65", 925, 53);
+  line(940, 48, 960, 48);
+  text("42", 925, 73);
+  line(940, 68, 960, 68);
+  text("25", 925, 93);
+  line(940, 88, 960, 88);
+  text("14", 925, 113);
+  line(940, 108, 960, 108);
+  text("6", 925, 133);
+  line(940, 128, 960, 128);
+  text("2", 925, 153);
+  line(940, 148, 960, 148);
+  text("0.5", 925, 173);
+  line(940, 168, 960, 168);
+  
+  text("Sensor 2", 850, 208);
+  line(960,188,end,188);
+  text("65", 925, 206);
+  line(940, 201, 960, 201);
+  text("42", 925, 226);
+  line(940, 221, 960, 221);
+  text("25", 925, 246);
+  line(940, 241, 960, 241);
+  text("14", 925, 266);
+  line(940, 261, 960, 261);
+  text("6", 925, 286);
+  line(940, 281, 960, 281);
+  text("2", 925, 306);
+  line(940, 301, 960, 301);
+  text("0.5", 925, 326);
+  line(940, 321, 960, 321);
+  
+  text("Sensor 3", 850, 356);
+  line(960,336,end,336);
+  text("65", 925, 359);
+  line(940, 354, 960, 354);
+  text("42", 925, 379);
+  line(940, 374, 960, 374);
+  text("25", 925, 399);
+  line(940, 394, 960, 394);
+  text("14", 925, 419);
+  line(940, 414, 960, 414);
+  text("6", 925, 439);
+  line(940, 434, 960, 434);
+  text("2", 925, 459);
+  line(940, 454, 960, 454);
+  text("0.5", 925, 479);
+  line(940, 474, 960, 474);
+  
+  text("Sensor 4", 850, 504);
+  line(960,484,end,484);
+  text("65", 925, 507);
+  line(940, 502, 960, 502);
+  text("42", 925, 527);
+  line(940, 522, 960, 522);
+  text("25", 925, 547);
+  line(940, 542, 960, 542);
+  text("14", 925, 567);
+  line(940, 562, 960, 562);
+  text("6", 925, 587);
+  line(940, 582, 960, 582);
+  text("2", 925, 607);
+  line(940, 602, 960, 602);
+  text("0.5", 925, 627);
+  line(940, 622, 960, 622);
+  
+  text("Sensor 5", 850, 652);
+  line(960,632,end,632);
+  text("65", 925, 655);
+  line(940, 650, 960, 650);
+  text("42", 925, 675);
+  line(940, 670, 960, 670);
+  text("25", 925, 695);
+  line(940, 690, 960, 690);
+  text("14", 925, 715);
+  line(940, 710, 960, 710);
+  text("6", 925, 735);
+  line(940, 730, 960, 730);
+  text("2", 925, 755);
+  line(940, 750, 960, 750);
+  text("0.5", 925, 775);
+  line(940, 770, 960, 770);
+  
+  text("Sensor 6", 850, 800);
+  line(960,780,end,780);
+  text("65", 925, 798);
+  line(940, 793, 960, 793);
+  text("42", 925, 818);
+  line(940, 813, 960, 813);
+  text("25", 925, 838);
+  line(940, 833, 960, 833);
+  text("14", 925, 858);
+  line(940, 853, 960, 853);
+  text("6", 925, 878);
+  line(940, 873, 960, 873);
+  text("2", 925, 898);
+  line(940, 893, 960, 893);
+  text("0.5", 925, 918);
+  line(940, 913, 960, 913);
+  
+  text("LBS", 900, 935);
+  text("SEC", 925, 960);
+  
+  text("0",960,960);
+  text("1",997,960);
+  text("2",1034,960);
+  text("3",1071,960);
+  text("4",1108,960);
+  text("5",1145,960);
+  text("6",1182,960);
+  text("7",1219,960);
+  text("8",1256,960);
+  text("9",1293,960);
+  text("10",1330,960);
+  text("11",1367,960);
+  text("12",1404,960);
+  text("13",1441,960);
+  text("14",1478,960);
+  text("15",1515,960);
+  text("16",1552,960);
+  text("17",1589,960);
+  text("18",1626,960);
+  text("19",1663,960);
+  text("20",1700,960);
+  text("21",1737,960);
+  text("22",1774,960);
+  text("23",1811,960);
+  text("24",1848,960);
+  text("25",1885,960);
+  noFill();
+}
