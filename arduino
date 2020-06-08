@@ -1,0 +1,38 @@
+//value taken from processing, telling arduino to run code or not
+char val;
+//values for analog port numbers
+int analogPin1 = 0;
+int analogPin2 = 1;
+int analogPin3 = 2;
+int analogPin4 = 3;
+int analogPin5 = 4;
+int analogPin6 = 5;
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+}
+
+void loop() {
+  //reading value from processing
+  if(Serial.available()){
+    val = Serial.read();
+  }
+  //runs code if val = 2 (if ON was pressed)
+ if(val == '2'){
+  //stores sensor values
+  int variable1 = analogRead(analogPin1);
+  int variable2 = analogRead(analogPin2);
+  int variable3 = analogRead(analogPin3);
+  int variable4 = analogRead(analogPin4);
+  int variable5 = analogRead(analogPin5);
+  int variable6 = analogRead(analogPin6);
+  //prints sensor values to serial monitor for processing to read
+  Serial.println(variable1);
+  Serial.println(variable2);
+  Serial.println(variable3);
+  Serial.println(variable4);
+  Serial.println(variable5);
+  Serial.println(variable6);
+  delay(25);
+  }
+ }
